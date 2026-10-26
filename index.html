@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Film przejścia, spacer 3D 360° i rzut 3D mieszkań i domów z rzutu i zdjęć, bez wizyty na miejscu. Płatność po podglądzie.">
+<meta property="og:title" content="pielova.pl — wizualizacje 3D mieszkań">
+<meta property="og:description" content="Film, spacer 3D 360° i rzut 3D. Pokaż mieszkanie, zanim ktoś do niego wejdzie.">
+<title>pielova.pl</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+body{margin:0}
+/* Layout: photo-led studio page. Plaster ground, graphite type, walnut only for measurements and marks. Column 1240px; the 3D tour is the centrepiece. Deliberately one light look. */
+:root{
+  --bg:#F2F3F0; --surface:#FFFFFF; --ink:#1B1D1C; --mute:#555B57; --line:#D3D6D1;
+  --walnut:#7A5233; --deep:#202321; --deep-mute:#B3B9B5; --deep-line:#3A3F3C; --glass:rgba(27,29,28,.72);
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:"Figtree","Helvetica Neue",Arial,sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.2,.7,.1,1);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+img,video{max-width:100%;display:block}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--walnut);outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+.mono{font:500 12px/1.45 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h2{font-size:clamp(32px,4.4vw,54px);line-height:1.03;font-variation-settings:"opsz" 96}
+p{margin:0}
+.lead{font-size:19px;color:var(--mute);max-width:36em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:50px;padding:0 24px;border-radius:999px;background:var(--ink);color:#fff;text-decoration:none;font:600 15px/1 var(--body);border:0;cursor:pointer;transition:background .3s var(--ease)}
+.btn:hover{background:var(--walnut)}
+.btn .ar{transition:transform .3s var(--ease)}
+.btn:hover .ar{transform:translateX(4px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:#fff}
+.txt{font-weight:600;text-decoration:none;background:linear-gradient(currentColor,currentColor) 0 100%/100% 1.5px no-repeat;padding-bottom:3px;transition:background-size .35s var(--ease);border:0;cursor:pointer;background-color:transparent}
+.txt:hover{background-size:0 1.5px;background-position:100% 100%}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid transparent;transition:border-color .3s,box-shadow .3s}
+.top.scrolled{box-shadow:0 1px 0 var(--line)}
+.top.scrolled{border-bottom-color:var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;height:68px}
+.brand{font:700 21px/1 var(--display);letter-spacing:-.03em;text-decoration:none;white-space:nowrap}
+.brand small{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-left:10px;vertical-align:3px}
+.nav{display:flex;gap:28px;font-weight:500;font-size:15px}
+.nav a{text-decoration:none;color:var(--mute);transition:color .2s}
+.nav a:hover{color:var(--ink)}
+.top .btn{min-height:42px;padding:0 18px;font-size:14px}
+
+/* hero */
+.hero{padding-block:clamp(44px,6vw,88px) 36px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:56px;align-items:end}
+.hero h1{font-size:clamp(42px,6.4vw,88px);line-height:.97;letter-spacing:-.04em;font-variation-settings:"opsz" 96}
+.hero h1 .ln{display:block;overflow:hidden;padding-bottom:.07em}
+.hero h1 .ln span{display:block;animation:rise 1s var(--ease) both}
+.hero h1 .ln:nth-child(2) span{animation-delay:.08s}
+.hero h1 .ln:nth-child(3) span{animation-delay:.16s}
+.hero h1 em{font-style:normal;color:var(--walnut)}
+.hero-side{display:flex;flex-direction:column;gap:26px;padding-bottom:8px;animation:fade 1s .35s var(--ease) both}
+.hero-cta{display:flex;flex-wrap:wrap;align-items:center;gap:22px}
+@keyframes rise{from{transform:translateY(105%)}to{transform:none}}
+@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.reel{margin-top:clamp(36px,5vw,60px);position:relative}
+.reel-box{position:relative;border-radius:6px;overflow:hidden;background:#D9DBD6;animation:open 1.4s .2s var(--ease) both}
+.reel video{width:100%;aspect-ratio:21/9;object-fit:cover}
+.reel-play{position:absolute;left:20px;bottom:20px;display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:0 20px 0 8px;border-radius:999px;border:0;background:rgba(255,255,255,.92);color:var(--ink);font-weight:600;font-size:15px;cursor:pointer;transition:transform .3s var(--ease)}
+.reel-play:hover{transform:scale(1.04)}
+.reel-play i{width:34px;height:34px;border-radius:50%;background:var(--ink);display:grid;place-items:center}
+.reel-play svg{width:12px;height:12px;fill:#fff;margin-left:2px}
+@keyframes open{from{clip-path:inset(10% 6% 10% 6% round 6px)}to{clip-path:inset(0 0 0 0 round 6px)}}
+.dim{display:flex;align-items:center;gap:14px;margin-top:16px;color:var(--walnut)}
+.dim .bar{flex:1;height:1px;background:currentColor;position:relative}
+.dim .bar::before,.dim .bar::after{content:"";position:absolute;top:-5px;width:1px;height:11px;background:currentColor}
+.dim .bar::before{left:0}.dim .bar::after{right:0}
+.reel-cap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:12px;color:var(--mute)}
+
+/* facts strip */
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:56px}
+.facts div{padding:22px 20px 22px 0;display:flex;flex-direction:column;gap:4px}
+.facts div+div{padding-left:20px;border-left:1px solid var(--line)}
+.facts b{font:600 22px/1.2 var(--display);letter-spacing:-.01em}
+.facts span{color:var(--mute);font-size:15px}
+
+/* sections */
+.sec{padding-block:clamp(80px,10vw,136px)}
+.head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 64px;align-items:end;margin-bottom:clamp(36px,5vw,56px)}
+.eyebrow{color:var(--walnut);margin-bottom:18px;display:block}
+
+/* 3D tour */
+.tour{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.vr{position:relative;aspect-ratio:16/10;border-radius:6px;overflow:hidden;background:#1d201e url(img/kadr_przedpokoj.jpg) center/cover no-repeat;touch-action:none;user-select:none;-webkit-user-select:none}
+.vr canvas{display:block;width:100%;height:100%;cursor:grab}
+.vr.grab canvas{cursor:grabbing}
+.vr.full{position:fixed;inset:0;z-index:100;border-radius:0;aspect-ratio:auto;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.tag{position:absolute;left:0;top:0;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;padding:8px 13px 8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:var(--glass);color:#fff;font:500 13px/1 var(--body);white-space:nowrap;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .2s}
+.tag:hover,.tag.hl{background:var(--walnut);border-color:var(--walnut)}
+.tag svg{width:13px;height:13px}
+.vr-top{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none}
+.chip{pointer-events:auto;background:var(--glass);color:#fff;border-radius:10px;padding:9px 13px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chip .mono{color:#D8C2AA;font-size:11px}
+.chip b{display:block;font:600 19px/1.15 var(--display);margin-top:2px}
+.ctrls{display:flex;gap:8px;pointer-events:auto}
+.ic{width:44px;height:44px;border-radius:11px;border:1px solid rgba(255,255,255,.22);background:var(--glass);color:#fff;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .2s}
+.ic:hover{background:var(--walnut)}
+.ic svg{width:19px;height:19px}
+.vr-bot{position:absolute;left:0;right:0;bottom:0;padding:14px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;background:linear-gradient(transparent,rgba(0,0,0,.35))}
+.vr-bot::-webkit-scrollbar{display:none}
+.vr-bot button{flex:none;border:1px solid rgba(255,255,255,.25);background:var(--glass);color:#fff;border-radius:999px;padding:9px 14px;font-size:14px;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.vr-bot button[aria-current="true"]{background:#fff;color:var(--ink);border-color:#fff;font-weight:600}
+.vr-load{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .9s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.vr-start{position:absolute;inset:0;display:grid;place-items:center;background:rgba(20,22,21,.28);transition:opacity .5s}
+.vr-start.gone{opacity:0;pointer-events:none}
+.vr-start .btn{background:#fff;color:var(--ink)}
+.vr-start .btn:hover{background:var(--walnut);color:#fff}
+.vr-mark{position:absolute;right:14px;bottom:62px;color:rgba(255,255,255,.8);font-size:10.5px;pointer-events:none}
+.side{display:flex;flex-direction:column;gap:16px}
+.plan{position:relative;background:var(--surface);border-radius:6px;overflow:hidden;aspect-ratio:1/1}
+.plan img{width:100%;height:100%;object-fit:cover}
+.plan svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pt{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;border:2px solid #fff;padding:0;background:var(--ink);color:#fff;font:500 11px/24px var(--mono);cursor:pointer;transition:background .3s,transform .3s var(--ease);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.pt:hover{transform:translate(-50%,-50%) scale(1.12)}
+.pt[aria-current="true"]{background:var(--walnut)}
+.how{display:grid;gap:10px;font-size:15px;color:var(--mute)}
+.how div{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:baseline}
+.how .mono{color:var(--walnut)}
+
+/* deliverables */
+.deliv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(24px,3vw,40px)}
+.item{display:flex;flex-direction:column;gap:16px;min-width:0}
+.item .ph{position:relative;overflow:hidden;border-radius:6px;background:var(--surface);aspect-ratio:4/3;border:0;padding:0;cursor:zoom-in;width:100%}
+.item .ph img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
+.item .ph:hover img{transform:scale(1.04)}
+.item .ph.contain img{object-fit:contain;padding:6%}
+.item .ph .badge{position:absolute;right:12px;bottom:12px;background:var(--glass);color:#fff;border-radius:999px;padding:7px 12px;font-size:12px}
+.item h3{font-size:26px}
+.item p{color:var(--mute)}
+.spec{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:2px 0 0;font-size:15px;border-top:1px solid var(--line);padding-top:14px}
+.spec dt{color:var(--walnut)}
+.spec dd{margin:0}
+
+/* package contents */
+.pack{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:48px;align-items:start}
+.tree{background:var(--surface);border-radius:6px;padding:28px 30px;font:400 14.5px/1.9 var(--mono);overflow-x:auto}
+.tree div{white-space:pre}
+.tree .f{color:var(--ink)}
+.tree .d{color:var(--walnut);font-weight:500}
+.tree .s{color:var(--mute)}
+.got{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--line)}
+.got li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;padding:20px 0;border-top:1px solid var(--line)}
+.got .mono{color:var(--walnut);padding-top:4px}
+.got b{font:600 19px/1.3 var(--display);display:block;margin-bottom:4px}
+.got p{color:var(--mute);font-size:16px}
+.guar{display:grid;gap:0}
+.guar>div{display:grid;grid-template-columns:40px minmax(0,1fr);gap:16px;padding:22px 0;border-top:1px solid var(--line)}
+.guar>div:last-child{border-bottom:1px solid var(--line)}
+.guar svg{width:28px;height:28px;color:var(--walnut)}
+.guar h3{font-size:20px;margin-bottom:4px}
+.guar p{color:var(--mute);font-size:16px}
+
+/* gallery */
+.gal{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 max(24px,calc((100vw - 1240px)/2 + 24px)) 10px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.gal figure{margin:0;flex:0 0 min(80vw,720px);scroll-snap-align:center}
+.gal button{display:block;border:0;padding:0;width:100%;border-radius:6px;overflow:hidden;cursor:zoom-in;background:#ddd}
+.gal img{width:100%;aspect-ratio:16/9;object-fit:cover;transition:transform 1.2s var(--ease)}
+.gal button:hover img{transform:scale(1.03)}
+.gal figcaption{display:flex;justify-content:space-between;margin-top:12px;color:var(--mute)}
+.gal-nav{display:flex;gap:10px;justify-self:end}
+.round{width:48px;height:48px;border-radius:50%;border:1px solid var(--ink);background:transparent;cursor:pointer;display:grid;place-items:center;transition:background .25s,color .25s}
+.round:hover{background:var(--ink);color:#fff}
+.round svg{width:18px;height:18px}
+
+/* audience band */
+.band{background:var(--deep);color:#EEF0EC}
+.band .eyebrow{color:#C9A27E}
+.band .lead{color:var(--deep-mute)}
+.aud{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 64px}
+.aud div{padding:28px 0;border-top:1px solid var(--deep-line);display:grid;gap:8px}
+.aud h3{font-size:24px}
+.aud p{color:var(--deep-mute);max-width:32em}
+.stat{display:flex;gap:28px;align-items:baseline;flex-wrap:wrap;margin-top:56px;padding-top:28px;border-top:1px solid var(--deep-line)}
+.stat b{font:600 clamp(56px,8vw,100px)/.9 var(--display);letter-spacing:-.04em;font-variation-settings:"opsz" 96}
+.stat p{color:var(--deep-mute);max-width:30em}
+.stat .mono{color:#8E9590;margin-top:8px}
+
+/* process */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;position:relative;list-style:none;margin:0;padding:34px 0 0}
+.steps::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:var(--line)}
+.steps::after{content:"";position:absolute;left:0;top:0;height:2px;width:var(--prog,100%);background:var(--walnut);transition:width 1.6s var(--ease)}
+.steps li{display:flex;flex-direction:column;gap:10px;position:relative}
+.steps li::before{content:"";position:absolute;top:-40px;left:0;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--walnut)}
+.steps .mono{color:var(--walnut)}
+.steps h3{font-size:22px}
+.steps p{color:var(--mute);font-size:16px}
+.req{margin-top:56px;display:flex;gap:20px;align-items:flex-start;max-width:760px}
+.req .mono{color:var(--walnut);white-space:nowrap;padding-top:4px}
+
+/* pricing */
+.price{border-top:1.5px solid var(--ink)}
+.prow{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,4fr) minmax(0,2fr);gap:24px;padding:30px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.prow h3{font-size:26px}
+.prow .who{color:var(--mute);font-size:15px;margin-top:6px}
+.prow ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;color:var(--mute);font-size:16px}
+.prow ul li::before{content:"+";color:var(--walnut);margin-right:10px;font-family:var(--mono)}
+.prow .amt{font:600 clamp(30px,3.4vw,44px)/1 var(--display);letter-spacing:-.03em;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.prow .amt small{display:block;font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.pnote{margin-top:18px;color:var(--mute)}
+
+/* faq */
+.faq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:48px}
+.qa details{border-top:1px solid var(--line)}
+.qa details:last-child{border-bottom:1px solid var(--line)}
+.qa summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:20px;padding:24px 0;font:600 20px/1.3 var(--display);letter-spacing:-.01em}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary .pl{flex:none;width:22px;height:22px;position:relative;margin-top:2px}
+.qa summary .pl::before,.qa summary .pl::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:1.5px;background:var(--ink);transform:translate(-50%,-50%);transition:transform .35s var(--ease)}
+.qa summary .pl::after{transform:translate(-50%,-50%) rotate(90deg)}
+.qa details[open] .pl::after{transform:translate(-50%,-50%) rotate(0)}
+.qa .ans{padding:0 0 26px;color:var(--mute);max-width:40em}
+.qa details[open] .ans{animation:fade .5s var(--ease)}
+
+/* contact */
+.contact{background:var(--deep);color:#EEF0EC}
+.contact .eyebrow{color:#C9A27E}
+.contact h2{max-width:16em}
+.mail{display:flex;flex-wrap:wrap;align-items:center;gap:18px 28px;margin-top:clamp(40px,5vw,60px)}
+.mail .addr{font:500 clamp(28px,5.4vw,70px)/1.05 var(--display);letter-spacing:-.035em;user-select:all;-webkit-user-select:all;word-break:break-word;color:#fff}
+.copy{min-height:48px;padding:0 20px;border-radius:999px;border:1px solid #6C736E;background:transparent;color:#EEF0EC;font:600 14px/1 var(--body);cursor:pointer;transition:background .25s,color .25s}
+.copy:hover{background:#EEF0EC;color:var(--deep)}
+.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:64px;padding-top:24px;border-top:1px solid var(--deep-line)}
+.cgrid .mono{color:#8E9590;margin-bottom:8px;display:block}
+.cgrid .sel{user-select:all;-webkit-user-select:all;font-size:20px;font-weight:600}
+.cgrid p{color:#D7DAD6}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:96px;color:#8E9590}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:200;background:rgba(14,15,15,.94);display:flex;flex-direction:column;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:fade .35s var(--ease)}
+.lb-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#E5E7E4;min-height:48px}
+.lb-body{flex:1;min-height:0;display:grid;place-items:center;position:relative;padding:12px 0}
+.lb-body img,.lb-body video{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px}
+.lb .ic{border-color:rgba(255,255,255,.25)}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%)}
+.lb-prev{left:0}.lb-next{right:0}
+
+/* reveal: visible at rest; JS hides only what is below the first screen */
+.rv{transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.rv.pre{opacity:0;transform:translateY(28px)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}
+
+@media (max-width:1000px){
+  .tour{grid-template-columns:minmax(0,1fr)}
+  .side{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+}
+@media (max-width:900px){
+  .nav{display:none}
+  .hero-grid,.head,.faq,.pack{grid-template-columns:minmax(0,1fr)}
+  .reel video{aspect-ratio:4/3}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .facts div:nth-child(3){padding-left:0;border-left:0}
+  .facts div:nth-child(n+3){border-top:1px solid var(--line)}
+  .deliv{grid-template-columns:minmax(0,1fr)}
+  .aud{grid-template-columns:minmax(0,1fr)}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:56px}
+  .steps::before,.steps::after{display:none}
+  .steps li{border-top:2px solid var(--line);padding-top:22px}
+  .steps li::before{top:-7px}
+  .prow{grid-template-columns:minmax(0,1fr)}
+  .prow .amt{text-align:left}
+  .cgrid{grid-template-columns:minmax(0,1fr)}
+  .vr{aspect-ratio:4/5}
+  .gal-nav{justify-self:start}
+}
+@media (max-width:600px){
+  .side{grid-template-columns:minmax(0,1fr)}
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .top .btn{display:none}
+  .brand small{display:none}
+  .reel-play{left:12px;bottom:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+  .rv.pre{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#start">pielova<small>wizualizacje 3D</small></a>
+    <nav class="nav" aria-label="Sekcje strony">
+      <a href="#spacer">Spacer 3D</a>
+      <a href="#co">Co dostajesz</a>
+      <a href="#proces">Jak to wygląda</a>
+      <a href="#cennik">Cennik</a>
+      <a href="#pytania">Pytania</a>
+    </nav>
+    <a class="btn" href="#kontakt">Wyślij rzut</a>
+  </div>
+</header>
+
+<main id="start">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <h1>
+          <span class="ln"><span>Pokaż mieszkanie,</span></span>
+          <span class="ln"><span>zanim ktoś</span></span>
+          <span class="ln"><span>do niego <em>wejdzie.</em></span></span>
+        </h1>
+        <div class="hero-side">
+          <p class="lead">Film przejścia, spacer 3D 360° i rzut 3D z meblami. Robię je z rzutu i zdjęć, bez wizyty na miejscu. Także dla lokali, które jeszcze się budują.</p>
+          <div class="hero-cta">
+            <a class="btn" href="#kontakt">Zamów bezpłatną próbkę <span class="ar" aria-hidden="true">→</span></a>
+            <a class="txt" href="#spacer">Wejdź do spaceru 3D</a>
+          </div>
+        </div>
+      </div>
+      <div class="reel">
+        <div class="reel-box">
+          <video id="reel" src="img/film.mp4" poster="img/kadr_salon_okno.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+          <button class="reel-play" type="button" id="playFilm"><i><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5z"/></svg></i>Obejrzyj cały film · 32 s</button>
+        </div>
+        <div class="dim mono" aria-hidden="true"><span>A</span><span class="bar"></span><span>52,7 m²</span><span class="bar"></span><span>B</span></div>
+        <div class="reel-cap mono"><span>Mieszkanie przykładowe · 2 pokoje · film w jednym ujęciu</span><span>Wizualizacja 3D, nie zdjęcie</span></div>
+      </div>
+      <div class="facts">
+        <div><b>3–5 dni</b><span>od rzutu do gotowych plików</span></div>
+        <div><b>0 wizyt</b><span>wystarczy rzut i zdjęcia</span></div>
+        <div><b>Jeden pakiet</b><span>film, spacer 3D i rzut 3D</span></div>
+        <div><b>Płatność po podglądzie</b><span>najpierw widzisz, potem płacisz</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="spacer" style="padding-top:clamp(56px,7vw,96px)">
+    <div class="wrap">
+      <div class="head rv">
+        <div>
+          <span class="eyebrow mono">Spacer 3D · działa na tej stronie</span>
+          <h2>Wejdź do mieszkania i rozejrzyj się.</h2>
+        </div>
+        <p class="lead">Tak wygląda spacer, który dostaje klient. Dziewięć punktów 360°, w każdym pomieszczeniu, także w łazience i na balkonie. Działa w przeglądarce telefonu, bez instalowania czegokolwiek.</p>
+      </div>
+      <div class="tour">
+        <div class="vr" id="vr">
+          <div class="tags" id="tags"></div>
+          <div class="vr-top">
+            <div class="chip"><span class="mono" id="vrNo">Punkt 1 z 9</span><b id="vrName">Wejście</b></div>
+            <div class="ctrls">
+              <button class="ic" type="button" id="zIn" aria-label="Przybliż"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+              <button class="ic" type="button" id="zOut" aria-label="Oddal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+              <button class="ic" type="button" id="fs" aria-label="Pełny ekran"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+            </div>
+          </div>
+          <div class="vr-bot" id="rooms" aria-label="Pomieszczenia"></div>
+          <span class="vr-mark mono">Wizualizacja 3D</span>
+          <div class="vr-load" id="vrLoad" hidden></div>
+          <div class="vr-start" id="vrStart"><button class="btn" type="button" id="vrGo">Rozpocznij spacer <span class="ar" aria-hidden="true">→</span></button></div>
+        </div>
+        <aside class="side">
+          <div class="plan" id="plan">
+            <img src="img/plan.jpg" alt="Plan mieszkania z góry z punktami spaceru">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="cone" fill="rgba(122,82,51,.45)" d=""/></svg>
+          </div>
+          <div class="how">
+            <div><span class="mono">Rozglądanie</span><span>przeciągnij palcem albo myszą</span></div>
+            <div><span class="mono">Przybliżanie</span><span>dwa palce, kółko myszy albo przyciski + i −</span></div>
+            <div><span class="mono">Przejście</span><span>dotknij nazwy pokoju w obrazie albo punktu na planie</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="co" style="padding-top:0">
+    <div class="wrap">
+      <div class="head rv">
+        <div>
+          <span class="eyebrow mono">Co dostajesz</span>
+          <h2>Jeden model 3D. Trzy rzeczy, które się ze sobą zgadzają.</h2>
+        </div>
+        <p class="lead">Każde mieszkanie buduję w 3D od zera na podstawie rzutu. Film, spacer i rzut powstają z tego samego modelu, więc meble, kolory i wymiary są wszędzie takie same.</p>
+      </div>
+      <div class="deliv">
+        <article class="item rv">
+          <button class="ph" type="button" data-film aria-label="Odtwórz film przykładowy"><img src="img/film_poster.jpg" alt="" loading="lazy"><span class="badge mono">▶ Odtwórz</span></button>
+          <h3>Film przejścia</h3>
+          <p>Kamera idzie jak człowiek: wejście, łazienka, sypialnia, a na koniec salon. Jedno ujęcie, bez cięć.</p>
+          <dl class="spec mono"><dt>Długość</dt><dd>ok. 30 s</dd><dt>Formaty</dt><dd>1080p · 720p · 4:5</dd><dt>Wersje</dt><dd>z tytułem i bez</dd></dl>
+        </article>
+        <article class="item rv d1">
+          <a class="ph" href="#spacer" aria-label="Przejdź do spaceru 3D" style="cursor:pointer"><img src="img/kadr_przedpokoj.jpg" alt="" loading="lazy"><span class="badge mono">Wypróbuj wyżej</span></a>
+          <h3>Spacer 3D 360°</h3>
+          <p>Klient sam chodzi po pokojach i rozgląda się w każdą stronę. Dostajesz link do ogłoszenia i plik, który działa bez internetu.</p>
+          <dl class="spec mono"><dt>Punkty</dt><dd>ok. 2 na pokój</dd><dt>Dostęp</dt><dd>link i plik offline</dd><dt>Ekran</dt><dd>telefon i komputer</dd></dl>
+        </article>
+        <article class="item rv d2">
+          <button class="ph contain" type="button" data-zoom="img/rzut_perspektywa.jpg" data-cap="Rzut 3D — perspektywa" aria-label="Powiększ rzut 3D"><img src="img/rzut_perspektywa.jpg" alt="" loading="lazy"><span class="badge mono">Powiększ</span></button>
+          <h3>Rzut 3D</h3>
+          <p>Mieszkanie bez sufitu, z meblami. Od razu widać, gdzie jest kuchnia i ile miejsca ma sypialnia.</p>
+          <dl class="spec mono"><dt>Widoki</dt><dd>perspektywa i z góry</dd><dt>Rozmiar</dt><dd>2400 × 1632 px</dd><dt>Użycie</dt><dd>ogłoszenie i druk</dd></dl>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0" aria-labelledby="galT">
+    <div class="wrap">
+      <div class="head rv" style="margin-bottom:36px">
+        <div>
+          <span class="eyebrow mono">Kadry · mieszkanie przykładowe 52,7 m²</span>
+          <h2 id="galT">Każde pomieszczenie, także łazienka.</h2>
+        </div>
+        <div class="gal-nav">
+          <button class="round" type="button" id="galPrev" aria-label="Poprzedni kadr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="round" type="button" id="galNext" aria-label="Następny kadr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="gal" id="gal">
+      <figure><button type="button" data-g="0" aria-label="Powiększ: salon z jadalnią"><img src="img/kadr_salon_jadalnia.jpg" alt="Salon z jadalnią i aneksem kuchennym" loading="lazy"></button><figcaption class="mono"><span>Salon z jadalnią</span><span>1 / 7</span></figcaption></figure>
+      <figure><button type="button" data-g="1" aria-label="Powiększ: aneks kuchenny"><img src="img/kadr_kuchnia.jpg" alt="Aneks kuchenny z okrągłym stołem" loading="lazy"></button><figcaption class="mono"><span>Aneks kuchenny</span><span>2 / 7</span></figcaption></figure>
+      <figure><button type="button" data-g="2" aria-label="Powiększ: sypialnia"><img src="img/kadr_sypialnia.jpg" alt="Sypialnia z tapicerowanym łóżkiem" loading="lazy"></button><figcaption class="mono"><span>Sypialnia</span><span>3 / 7</span></figcaption></figure>
+      <figure><button type="button" data-g="3" aria-label="Powiększ: łazienka"><img src="img/kadr_lazienka.jpg" alt="Łazienka w marmurze" loading="lazy"></button><figcaption class="mono"><span>Łazienka</span><span>4 / 7</span></figcaption></figure>
+      <figure><button type="button" data-g="4" aria-label="Powiększ: salon przy oknie"><img src="img/kadr_salon_okno.jpg" alt="Salon przy oknie balkonowym" loading="lazy"></button><figcaption class="mono"><span>Salon przy oknie</span><span>5 / 7</span></figcaption></figure>
+      <figure><button type="button" data-g="5" aria-label="Powiększ: przedpokój"><img src="img/kadr_przedpokoj.jpg" alt="Przedpokój z widokiem na salon" loading="lazy"></button><figcaption class="mono"><span>Przedpokój</span><span>6 / 7</span></figcaption></figure>
+      <figure><button type="button" data-g="6" aria-label="Powiększ: rzut 3D z góry"><img src="img/rzut_z_gory.jpg" alt="Rzut 3D z góry" loading="lazy" style="object-fit:contain;background:#fff"></button><figcaption class="mono"><span>Rzut 3D z góry</span><span>7 / 7</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="pakiet" style="padding-top:0">
+    <div class="wrap pack">
+      <div class="rv">
+        <span class="eyebrow mono">Co otrzymujesz</span>
+        <h2 style="margin-bottom:22px">Komplet materiałów, gotowy do publikacji.</h2>
+        <p class="lead" style="margin-bottom:30px">Wszystko dostajesz w jednym linku, uporządkowane i opisane. Możesz od razu wstawić materiały do ogłoszenia, na stronę inwestycji albo wysłać klientowi.</p>
+        <ul class="got">
+          <li><span class="mono">Film</span><div><b>Trzy formaty</b><p>1080p, 720p i 4:5 do mediów społecznościowych. Wersja z tytułem i bez napisów.</p></div></li>
+          <li><span class="mono">Spacer 3D</span><div><b>Link i wersja offline</b><p>Link do wklejenia w ogłoszenie oraz plik, który działa bez internetu.</p></div></li>
+          <li><span class="mono">Rzut 3D</span><div><b>Dwa widoki</b><p>Perspektywa i widok z góry w rozdzielczości do druku.</p></div></li>
+          <li><span class="mono">Kadry</span><div><b>Każde pomieszczenie</b><p>Zdjęcia 1920 × 1080 gotowe do galerii ogłoszenia.</p></div></li>
+        </ul>
+      </div>
+      <div class="rv d1">
+        <span class="eyebrow mono">Zasady współpracy</span>
+        <div class="guar">
+          <div><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="14" cy="14" r="11"/><path d="M9 14.5l3.2 3.2L19 11"/></svg><div><h3>Płacisz po zobaczeniu podglądu</h3><p>Najpierw dostajesz podgląd ze znakiem wodnym. Pełne pliki po akceptacji i płatności.</p></div></div>
+          <div><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="14" cy="14" r="11"/><path d="M14 8v6l4 3"/></svg><div><h3>Termin ustalony z góry</h3><p>Przed startem dostajesz konkretną datę oddania. Zwykle 3–5 dni roboczych od otrzymania rzutu.</p></div></div>
+          <div><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="4" width="18" height="20" rx="2"/><path d="M9 10h10M9 14h10M9 18h6"/></svg><div><h3>Uczciwe oznaczenie</h3><p>Wszystko podpisane jako wizualizacja. Wymiary i układ zgodne z rzutem, bez dorysowywania czegokolwiek.</p></div></div>
+          <div><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 13V9a7 7 0 0 1 14 0v4"/><rect x="5" y="13" width="18" height="11" rx="2"/></svg><div><h3>Twoje materiały zostają Twoje</h3><p>Rzut i zdjęcia służą tylko do Twojego zlecenia. Nie pokazuję ich nikomu bez Twojej zgody.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec band" id="dla-kogo">
+    <div class="wrap">
+      <div class="head rv">
+        <div>
+          <span class="eyebrow mono">Dla kogo</span>
+          <h2>Tam, gdzie zdjęć jeszcze nie ma albo nie wystarczają.</h2>
+        </div>
+        <p class="lead">Wystarczy rzut z wymiarami. Nie muszę przyjeżdżać, a mieszkanie nie musi jeszcze stać.</p>
+      </div>
+      <div class="aud">
+        <div class="rv"><h3>Deweloperzy</h3><p>Mieszkania w budowie sprzedajesz z rzutu. Film i spacer pokazują lokal urządzony, zanim staną ściany.</p></div>
+        <div class="rv d1"><h3>Biura nieruchomości</h3><p>Oferta, która długo wisi, dostaje coś, czego nie mają ogłoszenia obok. Klient ogląda całe mieszkanie, zanim zadzwoni.</p></div>
+        <div class="rv"><h3>Domy z projektu</h3><p>Producenci domów i rodziny przed budową. Model z katalogu albo projektu pokazany tak, jakby już stał.</p></div>
+        <div class="rv d1"><h3>Właściciele</h3><p>Sprzedajesz mieszkanie albo kupiłeś je w budowie i chcesz zobaczyć, jak będzie wyglądać po urządzeniu.</p></div>
+      </div>
+      <div class="stat rv">
+        <b>113 dni</b>
+        <div>
+          <p>Tyle średnio czeka na kupca mieszkanie w pięciu największych miastach. W Warszawie 129 dni.</p>
+          <p class="mono">Metrohouse i Credipass, III kw. 2026</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="proces">
+    <div class="wrap">
+      <div class="head rv">
+        <div>
+          <span class="eyebrow mono">Jak to wygląda</span>
+          <h2>Od rzutu do gotowych plików w 3–5 dni roboczych.</h2>
+        </div>
+        <p class="lead">Płacisz dopiero, kiedy zobaczysz podgląd i powiesz, że jest dobrze.</p>
+      </div>
+      <ol class="steps" id="steps">
+        <li class="rv"><span class="mono">Dzień 0</span><h3>Wysyłasz materiały</h3><p>Rzut z wymiarami i zdjęcia, wizualizacje albo opis wykończenia.</p></li>
+        <li class="rv d1"><span class="mono">Dzień 1–2</span><h3>Model 3D</h3><p>Ściany, okna i drzwi z rzutu. Meble, materiały i światło według zdjęć albo w ustalonym stylu.</p></li>
+        <li class="rv d2"><span class="mono">Dzień 3</span><h3>Podgląd</h3><p>Oglądasz podgląd ze znakiem wodnym i akceptujesz efekt.</p></li>
+        <li class="rv d2"><span class="mono">Dzień 4–5</span><h3>Gotowe materiały</h3><p>Po płatności dostajesz komplet: filmy, spacer 3D, rzut i kadry w jednym linku.</p></li>
+      </ol>
+      <div class="req rv">
+        <span class="mono">Jedyny warunek</span>
+        <p>Rzut z wymiarami. Bez niego wymiary trzeba by zgadywać, a tego nie robię.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="cennik" style="padding-top:0">
+    <div class="wrap">
+      <div class="head rv">
+        <div>
+          <span class="eyebrow mono">Cennik</span>
+          <h2>Jedna cena za film, spacer i rzut.</h2>
+        </div>
+        <p class="lead">Dla porównania: w studiach wizualizacji sam render jednego pokoju kosztuje średnio około 680 zł.</p>
+      </div>
+      <div class="price rv">
+        <div class="prow">
+          <div><h3>Mieszkanie</h3><p class="who">Osoby prywatne i biura nieruchomości</p></div>
+          <ul><li>do 3 pokoi</li><li>film, spacer 3D i rzut 3D</li><li>podgląd przed płatnością</li></ul>
+          <div class="amt"><small>Cena</small>500 zł</div>
+        </div>
+        <div class="prow">
+          <div><h3>Typ lokalu w inwestycji</h3><p class="who">Deweloperzy</p></div>
+          <ul><li>lokal pokazany przed oddaniem budynku</li><li>aranżacja w stylu inwestycji</li><li>kilka typów lokali: cena za pakiet</li></ul>
+          <div class="amt"><small>Od</small>1 500 zł</div>
+        </div>
+        <div class="prow">
+          <div><h3>Dom</h3><p class="who">Producenci domów i inwestorzy indywidualni</p></div>
+          <ul><li>dom z projektu lub z katalogu</li><li>film, spacer 3D i rzut 3D</li><li>cena zależy od metrażu</li></ul>
+          <div class="amt"><small>Od</small>1 200 zł</div>
+        </div>
+      </div>
+      <p class="pnote mono">Ceny końcowe, bez VAT (rachunek) · płatność po akceptacji podglądu</p>
+    </div>
+  </section>
+
+  <section class="sec" id="pytania" style="padding-top:0">
+    <div class="wrap faq">
+      <div class="rv">
+        <span class="eyebrow mono">Pytania</span>
+        <h2>Zanim zamówisz.</h2>
+      </div>
+      <div class="qa rv">
+        <details open><summary>Czy to są zdjęcia?<span class="pl" aria-hidden="true"></span></summary><p class="ans">Nie. To wizualizacja 3D i zawsze ją tak podpisuję. Układ i wymiary są wiernie z rzutu. Wykończenie robię według Twoich zdjęć albo przykładowe, i wtedy piszę wprost, że to aranżacja przykładowa.</p></details>
+        <details><summary>Czy coś zmieniasz w mieszkaniu?<span class="pl" aria-hidden="true"></span></summary><p class="ans">Nie dorysowuję okien, metrów ani niczego, czego w lokalu nie ma. Ogłoszenie musi się zgadzać z rzeczywistością. To chroni Ciebie.</p></details>
+        <details><summary>Gdzie umieszczę spacer i film?<span class="pl" aria-hidden="true"></span></summary><p class="ans">Film wrzucasz jak każde wideo: do ogłoszenia, na YouTube, do mediów społecznościowych. Spacer dostajesz jako link, który wklejasz w opis ogłoszenia, na stronę inwestycji albo wysyłasz klientowi. Plik offline otwiera się bez internetu, np. na prezentacji w biurze.</p></details>
+        <details><summary>Ile to trwa?<span class="pl" aria-hidden="true"></span></summary><p class="ans">Zwykle 3–5 dni roboczych od otrzymania rzutu. Przy kilku lokalach ustalamy harmonogram.</p></details>
+        <details><summary>Co, jeśli efekt mi się nie spodoba?<span class="pl" aria-hidden="true"></span></summary><p class="ans">Płacisz dopiero po obejrzeniu podglądu. Na starcie ustalamy styl wykończenia i to, co ma być pokazane, więc efekt od początku jest taki, jak chcesz.</p></details>
+        <details><summary>Do czego mogę użyć plików?<span class="pl" aria-hidden="true"></span></summary><p class="ans">Do ogłoszeń, na stronę inwestycji, w mediach społecznościowych, w wiadomościach do klientów i na prezentacjach. Po zapłacie są Twoje.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec contact" id="kontakt">
+    <div class="wrap">
+      <span class="eyebrow mono">Kontakt</span>
+      <h2 class="rv">Wyślij rzut swojego mieszkania. Zrobię próbkę bezpłatnie, ze znakiem wodnym.</h2>
+      <div class="mail rv">
+        <span class="addr" id="addr">pielova.pl@gmail.com</span>
+        <button class="copy" type="button" id="copyBtn">Kopiuj adres</button>
+      </div>
+      <div class="cgrid">
+        <div><span class="mono">Telefon</span><span class="sel">667 501 480</span></div>
+        <div><span class="mono">Prowadzi</span><p>Jakub, pielova.pl</p></div>
+        <div><span class="mono">W wiadomości</span><p>Rzut z wymiarami, kilka zdjęć lub opis wykończenia i termin, na kiedy potrzebujesz materiałów.</p></div>
+      </div>
+      <div class="foot mono">
+        <span>pielova.pl · wizualizacje 3D mieszkań i domów</span>
+        <span>Materiały na stronie: mieszkanie przykładowe 52,7 m², fikcyjne</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lbCap">
+  <div class="lb-bar"><span class="mono" id="lbCap"></span><button class="ic" type="button" id="lbClose" aria-label="Zamknij"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="lb-body" id="lbBody"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* header */
+  addEventListener("scroll", function(){ $("top").classList.toggle("scrolled", scrollY > 8); }, {passive:true});
+
+  /* reveal: only elements below the first screen start hidden */
+  if (!reduce && "IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting) { e.target.classList.remove("pre"); io.unobserve(e.target); } });
+    }, {rootMargin:"0px 0px -8% 0px"});
+    [].forEach.call(document.querySelectorAll(".rv"), function(el){
+      if (el.getBoundingClientRect().top > innerHeight * 0.95) { el.classList.add("pre"); io.observe(el); }
+    });
+    var steps = $("steps");
+    if (steps.getBoundingClientRect().top > innerHeight) {
+      steps.style.setProperty("--prog", "0%");
+      var io2 = new IntersectionObserver(function(es){ if (es[0].isIntersecting) { steps.style.setProperty("--prog", "100%"); io2.disconnect(); } }, {rootMargin:"0px 0px -20% 0px"});
+      io2.observe(steps);
+    }
+  }
+
+  /* hero reel: play only on screen */
+  var reel = $("reel");
+  if (reduce) reel.pause();
+  else if ("IntersectionObserver" in window) new IntersectionObserver(function(es){
+    if (es[0].isIntersecting) { var p = reel.play(); if (p && p.catch) p.catch(function(){}); } else reel.pause();
+  }).observe(reel);
+
+  /* lightbox */
+  var lb = $("lb"), lbBody = $("lbBody"), lbCap = $("lbCap"), lastFocus = null, gIdx = -1;
+  var G = [
+    ["img/kadr_salon_jadalnia.jpg","Salon z jadalnią"],["img/kadr_kuchnia.jpg","Aneks kuchenny"],["img/kadr_sypialnia.jpg","Sypialnia"],
+    ["img/kadr_lazienka.jpg","Łazienka"],["img/kadr_salon_okno.jpg","Salon przy oknie"],["img/kadr_przedpokoj.jpg","Przedpokój"],["img/rzut_z_gory.jpg","Rzut 3D z góry"]
+  ];
+  function openLb(html, cap, gi){
+    lastFocus = document.activeElement; gIdx = (gi == null ? -1 : gi);
+    lbBody.innerHTML = html; lbCap.textContent = cap; lb.hidden = false; document.body.style.overflow = "hidden";
+    if (gIdx >= 0) {
+      lbBody.insertAdjacentHTML("beforeend",
+        '<button class="ic lb-nav lb-prev" type="button" aria-label="Poprzedni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+        '<button class="ic lb-nav lb-next" type="button" aria-label="Następny"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>');
+      lbBody.querySelector(".lb-prev").onclick = function(){ showG(gIdx - 1); };
+      lbBody.querySelector(".lb-next").onclick = function(){ showG(gIdx + 1); };
+    }
+    $("lbClose").focus();
+  }
+  function showG(i){ i = (i + G.length) % G.length; openLb('<img src="' + document.querySelectorAll("#gal img")[i].getAttribute("src") + '" alt="' + G[i][1] + '">', G[i][1] + " · " + (i + 1) + " / " + G.length, i); }
+  function closeLb(){ var v = lbBody.querySelector("video"); if (v) v.pause(); lb.hidden = true; lbBody.innerHTML = ""; document.body.style.overflow = ""; if (lastFocus) lastFocus.focus(); }
+  $("lbClose").onclick = closeLb;
+  lb.addEventListener("click", function(e){ if (e.target === lb || e.target === lbBody) closeLb(); });
+  addEventListener("keydown", function(e){
+    if (lb.hidden) return;
+    if (e.key === "Escape") closeLb();
+    if (gIdx >= 0 && e.key === "ArrowRight") showG(gIdx + 1);
+    if (gIdx >= 0 && e.key === "ArrowLeft") showG(gIdx - 1);
+  });
+  function openFilm(){ openLb('<video src="' + (reel.getAttribute("src") || reel.src) + '" poster="' + document.querySelector("[data-film] img").getAttribute("src") + '" controls autoplay playsinline></video>', "Film przykładowy · 32 s · jedno ujęcie"); }
+  $("playFilm").onclick = openFilm;
+  [].forEach.call(document.querySelectorAll("[data-film]"), function(b){ b.onclick = openFilm; });
+  [].forEach.call(document.querySelectorAll("[data-zoom]"), function(b){ b.onclick = function(){ openLb('<img src="' + b.querySelector("img").getAttribute("src") + '" alt="' + b.dataset.cap + '">', b.dataset.cap); }; });
+  [].forEach.call(document.querySelectorAll("[data-g]"), function(b){ b.onclick = function(){ showG(+b.dataset.g); }; });
+
+  /* gallery arrows */
+  var gal = $("gal");
+  function step(d){ var f = gal.querySelector("figure"); gal.scrollBy({left: d * (f.getBoundingClientRect().width + 20), behavior: reduce ? "auto" : "smooth"}); }
+  $("galPrev").onclick = function(){ step(-1); };
+  $("galNext").onclick = function(){ step(1); };
+
+  /* copy e-mail */
+  var cb = $("copyBtn");
+  cb.onclick = function(){
+    var t = $("addr").textContent;
+    function ok(){ cb.textContent = "Skopiowano"; setTimeout(function(){ cb.textContent = "Kopiuj adres"; }, 2000); }
+    function sel(){ var r = document.createRange(); r.selectNodeContents($("addr")); var s = getSelection(); s.removeAllRanges(); s.addRange(r); cb.textContent = "Zaznaczono, skopiuj"; }
+    try { navigator.clipboard.writeText(t).then(ok, sel); } catch (e) { sel(); }
+  };
+
+  /* ===== 3D tour ===== */
+  var P = [
+    {id:"p01", n:"Wejście", x:3.85, y:6.0, az:270, s:["p02","p09","p03"], l:48.4, t:86.8},
+    {id:"p02", n:"Przedpokój", x:4.9, y:4.6, az:225, s:["p01","p03","p07","p08"], l:59.4, t:72.2},
+    {id:"p03", n:"Salon", x:3.65, y:3.35, az:210, s:["p02","p04","p05"], l:46.3, t:59.1},
+    {id:"p04", n:"Aneks kuchenny", x:1.4, y:3.4, az:300, s:["p03","p05"], l:22.8, t:59.6},
+    {id:"p05", n:"Salon przy oknie", x:2.0, y:0.75, az:60, s:["p03","p04","p06"], l:29.1, t:31.9},
+    {id:"p06", n:"Balkon", x:1.45, y:-0.2, az:270, s:["p05"], l:23.3, t:22.0},
+    {id:"p07", n:"Sypialnia", x:5.6, y:2.6, az:320, s:["p02"], l:66.7, t:51.2},
+    {id:"p08", n:"Łazienka", x:6.3, y:5.6, az:0, s:["p02"], l:74.0, t:82.6},
+    {id:"p09", n:"Garderoba", x:1.6, y:5.65, az:180, s:["p01"], l:24.9, t:83.1}
+  ];
+  var byId = {}; P.forEach(function(p){ byId[p.id] = p; });
+  var vr = $("vr"), tagsEl = $("tags"), plan = $("plan"), cone = $("cone"), roomsEl = $("rooms");
+  var H = 1.45, R = 8;
+  var rad = function(d){ return d * Math.PI / 180; };
+
+  /* plan points and room buttons work even before 3D starts */
+  var pts = {}, rbs = {};
+  P.forEach(function(p, i){
+    var b = document.createElement("button"); b.type = "button"; b.className = "pt"; b.textContent = i + 1;
+    b.style.left = p.l + "%"; b.style.top = p.t + "%"; b.setAttribute("aria-label", "Punkt " + (i + 1) + ": " + p.n);
+    b.onclick = function(){ begin(); go(p.id); }; plan.appendChild(b); pts[p.id] = b;
+    var r = document.createElement("button"); r.type = "button"; r.textContent = p.n;
+    r.onclick = function(){ begin(); go(p.id); }; roomsEl.appendChild(r); rbs[p.id] = r;
+  });
+
+  if (!window.THREE) {
+    $("vrStart").innerHTML = '<p style="color:#fff;max-width:28em;text-align:center;padding:20px">Spacer 3D nie wczytał się w tej przeglądarce. Odśwież stronę albo otwórz ją w Chrome lub Safari.</p>';
+    return;
+  }
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({antialias:true}); }
+  catch (e) { $("vrStart").innerHTML = '<p style="color:#fff;max-width:28em;text-align:center;padding:20px">Ta przeglądarka nie obsługuje grafiki 3D. Otwórz stronę w Chrome lub Safari.</p>'; return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  vr.insertBefore(renderer.domElement, vr.firstChild);
+  var scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(75, 1, 0.05, 100);
+  var loader = new THREE.TextureLoader(), maxTex = renderer.capabilities.maxTextureSize || 4096;
+  var geo = new THREE.SphereGeometry(R, 96, 64); geo.scale(-1, 1, 1);
+  var cache = {};
+  function tex(id, q){
+    var k = id + "/" + q;
+    if (!cache[k]) cache[k] = new Promise(function(ok, bad){
+      loader.load("pano/" + q + "/" + id + ".jpg", function(t){ t.encoding = THREE.sRGBEncoding; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; ok(t); }, undefined, function(){ delete cache[k]; bad(); });
+    });
+    return cache[k];
+  }
+  var toV = function(dx, dy, dz){ return new THREE.Vector3(-dx, dz, -dy); };
+  var cur = null, sphere = null, moving = false, started = false;
+  var lon = 270, lat = -6, fov = 75, tFov = 75, lastAct = 0;
+
+  var rings = new THREE.Group(); scene.add(rings);
+  var mat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.9, depthTest:false});
+  var matH = new THREE.MeshBasicMaterial({color:0xC9A27E, transparent:true, opacity:1, depthTest:false});
+  var ringG = new THREE.RingGeometry(.17, .23, 48), dotG = new THREE.CircleGeometry(.08, 32);
+  var tags = [];
+  var arrow = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 8h9M8.5 4.5L12 8l-3.5 3.5"/></svg>';
+  function setRings(p){
+    rings.clear(); tagsEl.innerHTML = ""; tags = [];
+    p.s.forEach(function(sid){
+      var q = byId[sid], pos = toV(q.x - p.x, q.y - p.y, -H + .02);
+      [ringG, dotG].forEach(function(g){ var m = new THREE.Mesh(g, mat); m.rotation.x = -Math.PI / 2; m.position.copy(pos); m.renderOrder = 5; m.userData.id = sid; rings.add(m); });
+      var b = document.createElement("button"); b.type = "button"; b.className = "tag"; b.innerHTML = arrow + "<span>" + q.n + "</span>";
+      b.setAttribute("aria-label", "Przejdź: " + q.n);
+      b.onclick = function(e){ e.stopPropagation(); go(sid); };
+      b.onpointerenter = function(){ hl(sid); }; b.onpointerleave = function(){ hl(null); };
+      tagsEl.appendChild(b); tags.push({el:b, pos:pos, id:sid});
+    });
+  }
+  var hlId = null;
+  function hl(id){ if (id === hlId) return; hlId = id; rings.children.forEach(function(m){ m.material = m.userData.id === id ? matH : mat; }); tags.forEach(function(t){ t.el.classList.toggle("hl", t.id === id); }); }
+  function mark(p){
+    var i = P.indexOf(p);
+    $("vrName").textContent = p.n; $("vrNo").textContent = "Punkt " + (i + 1) + " z " + P.length;
+    P.forEach(function(q){ pts[q.id].setAttribute("aria-current", q === p ? "true" : "false"); rbs[q.id].setAttribute("aria-current", q === p ? "true" : "false"); });
+    var rb = rbs[p.id]; roomsEl.scrollTo({left: rb.offsetLeft - 20, behavior: reduce ? "auto" : "smooth"});
+  }
+  var load = $("vrLoad");
+  function go(id){
+    if (moving || (cur && cur.id === id)) return;
+    var target = byId[id];
+    var tm = setTimeout(function(){ load.hidden = false; }, 150);
+    var pr = tex(id, "lo").catch(function(){ return tex(id, "hi"); });
+    pr.then(function(t){
+      clearTimeout(tm); load.hidden = true;
+      var nw = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({map:t, transparent:true, opacity:1, depthWrite:false}));
+      if (!sphere || reduce) {
+        if (sphere) { scene.remove(sphere); sphere.material.dispose(); }
+        sphere = nw; scene.add(sphere);
+        if (!cur) { lon = target.az; lat = -6; }
+        cur = target; after(target); return;
+      }
+      moving = true; rings.visible = false; hl(null);
+      var d = toV(target.x - cur.x, target.y - cur.y, 0);
+      var toLon = Math.atan2(target.y - cur.y, target.x - cur.x) * 180 / Math.PI;
+      var dl = ((toLon - lon) % 360 + 540) % 360 - 180, lon0 = lon, lat0 = lat;
+      nw.position.copy(d); nw.material.opacity = 0; scene.add(nw);
+      var T = 1100, t0 = performance.now();
+      (function stepT(now){
+        var u = Math.min(1, (now - t0) / T), e = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2, o = Math.min(1, u * 1.6);
+        lon = lon0 + dl * (o < .5 ? 2 * o * o : 1 - Math.pow(-2 * o + 2, 2) / 2); lat = lat0 * (1 - o) - 4 * o;
+        cam.position.copy(d).multiplyScalar(e);
+        nw.material.opacity = Math.min(1, Math.max(0, (u - .25) / .6));
+        sphere.material.opacity = 1 - Math.max(0, (u - .55) / .45);
+        if (u < 1) return requestAnimationFrame(stepT);
+        scene.remove(sphere); sphere.material.dispose();
+        sphere = nw; sphere.position.set(0, 0, 0); cam.position.set(0, 0, 0);
+        cur = target; rings.visible = true; moving = false; after(target);
+      })(t0);
+    }, function(){ clearTimeout(tm); load.hidden = true; });
+  }
+  function after(p){
+    setRings(p); mark(p);
+    if (maxTex >= 4096) tex(p.id, "hi").then(function(t){ if (cur === p && sphere && !moving) { sphere.material.map = t; sphere.material.needsUpdate = true; } }).catch(function(){});
+    p.s.forEach(function(s){ tex(s, "lo").catch(function(){}); });
+  }
+
+  /* start overlay: the first panorama loads behind it */
+  function begin(){
+    if (started) return; started = true; $("vrStart").classList.add("gone"); lastAct = performance.now();
+  }
+  $("vrGo").onclick = begin;
+
+  /* input: drag, pinch, wheel, click */
+  var ptrs = new Map(), grab = null, moved = 0, pinch = null;
+  var cv = renderer.domElement;
+  cv.addEventListener("pointerdown", function(e){
+    begin(); cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY}); lastAct = performance.now();
+    if (ptrs.size === 1) { grab = {x:e.clientX, y:e.clientY, lon:lon, lat:lat}; moved = 0; vr.classList.add("grab"); }
+    if (ptrs.size === 2) { var a = Array.from(ptrs.values()); pinch = {d:Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y), f:tFov}; grab = null; moved = 99; }
+  });
+  cv.addEventListener("pointermove", function(e){
+    if (!ptrs.has(e.pointerId)) { if (e.pointerType === "mouse") hover(e); return; }
+    ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if (pinch && ptrs.size >= 2) { var a = Array.from(ptrs.values()); tFov = fov = Math.max(35, Math.min(95, pinch.f * pinch.d / Math.max(20, Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y)))); return; }
+    if (!grab) return;
+    var k = fov / cv.clientHeight * (e.pointerType === "touch" ? 1.2 : 1), dx = e.clientX - grab.x, dy = e.clientY - grab.y;
+    moved = Math.max(moved, Math.abs(dx) + Math.abs(dy));
+    lon = grab.lon - dx * k; lat = Math.max(-80, Math.min(80, grab.lat + dy * k));
+  });
+  function up(e){
+    if (grab && moved < 7 && ptrs.size === 1) { var h = hit(e); if (h) go(h.object.userData.id); }
+    ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) { grab = null; vr.classList.remove("grab"); } lastAct = performance.now();
+  }
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  vr.addEventListener("wheel", function(e){ if (!started) return; e.preventDefault(); tFov = Math.max(35, Math.min(95, tFov + e.deltaY * .05)); lastAct = performance.now(); }, {passive:false});
+  $("zIn").onclick = function(){ begin(); tFov = Math.max(35, tFov - 12); lastAct = performance.now(); };
+  $("zOut").onclick = function(){ begin(); tFov = Math.min(95, tFov + 12); lastAct = performance.now(); };
+  var ray = new THREE.Raycaster(), mv = new THREE.Vector2();
+  function hit(e){ var r = cv.getBoundingClientRect(); mv.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(mv, cam); return rings.visible ? ray.intersectObjects(rings.children)[0] : null; }
+  function hover(e){ var h = hit(e); hl(h ? h.object.userData.id : null); cv.style.cursor = h ? "pointer" : ""; }
+  vr.addEventListener("keydown", function(e){
+    var m = {ArrowLeft:[-6,0], ArrowRight:[6,0], ArrowUp:[0,4], ArrowDown:[0,-4]}[e.key];
+    if (m && e.target === vr) { e.preventDefault(); lon += m[0]; lat = Math.max(-80, Math.min(80, lat + m[1])); lastAct = performance.now(); }
+  });
+  vr.tabIndex = 0; vr.setAttribute("aria-label", "Spacer 3D. Strzałki obracają widok.");
+
+  /* full screen: CSS mode works on every phone; native fullscreen where allowed */
+  var full = false;
+  $("fs").onclick = function(){
+    begin(); full = !full; vr.classList.toggle("full", full); document.body.style.overflow = full ? "hidden" : "";
+    $("fs").setAttribute("aria-label", full ? "Zamknij pełny ekran" : "Pełny ekran");
+    if (full && vr.requestFullscreen && document.fullscreenEnabled) vr.requestFullscreen().catch(function(){});
+    if (!full && document.fullscreenElement) document.exitFullscreen().catch(function(){});
+    setTimeout(size, 60);
+  };
+  document.addEventListener("fullscreenchange", function(){ if (!document.fullscreenElement && full) { full = false; vr.classList.remove("full"); document.body.style.overflow = ""; setTimeout(size, 60); } });
+  addEventListener("keydown", function(e){ if (e.key === "Escape" && full && !document.fullscreenElement) $("fs").click(); });
+
+  /* tags, cone, loop */
+  var v = new THREE.Vector3(), dir = new THREE.Vector3(), look = new THREE.Vector3();
+  function drawTags(){
+    var w = cv.clientWidth, h = cv.clientHeight; cam.getWorldDirection(dir);
+    tags.forEach(function(t){
+      v.copy(t.pos).sub(cam.position); var front = v.dot(dir) > .2;
+      v.copy(t.pos).project(cam);
+      var x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h, yy = Math.min(Math.max(y, 90), h - 64);
+      var show = front && x > 50 && x < w - 50 && rings.visible;
+      t.el.style.visibility = show ? "visible" : "hidden";
+      if (show) t.el.style.transform = "translate(" + x.toFixed(1) + "px," + yy.toFixed(1) + "px) translate(-50%,-140%)";
+    });
+  }
+  function drawCone(){
+    if (!cur) return;
+    var a = rad(lon), s = Math.atan(Math.tan(rad(fov / 2)) * cam.aspect), L = 12;
+    var x = cur.l, y = cur.t;
+    var x1 = x + L * Math.cos(a - s), y1 = y + L * Math.sin(a - s), x2 = x + L * Math.cos(a + s), y2 = y + L * Math.sin(a + s);
+    cone.setAttribute("d", "M" + x + "," + y + " L" + x1.toFixed(2) + "," + y1.toFixed(2) + " A" + L + "," + L + " 0 0 1 " + x2.toFixed(2) + "," + y2.toFixed(2) + " Z");
+  }
+  function size(){ var w = vr.clientWidth, h = vr.clientHeight; if (!w || !h) return; renderer.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+  if ("ResizeObserver" in window) new ResizeObserver(size).observe(vr); else addEventListener("resize", size);
+  size();
+  var visible = true;
+  if ("IntersectionObserver" in window) new IntersectionObserver(function(es){ visible = es[0].isIntersecting; }).observe(vr);
+  var prev = performance.now();
+  function loop(now){
+    var dt = Math.min(64, now - prev); prev = now;
+    if (visible || full) {
+      if (!moving && !reduce && !ptrs.size && (!started || now - lastAct > 9000)) lon += dt * (started ? .003 : .006);
+      fov += (tFov - fov) * .2;
+      var a = rad(lon), b = rad(lat);
+      look.set(-Math.cos(a) * Math.cos(b), Math.sin(b), -Math.sin(a) * Math.cos(b)).add(cam.position);
+      if (Math.abs(cam.fov - fov) > .01) { cam.fov = fov; cam.updateProjectionMatrix(); }
+      cam.lookAt(look); renderer.render(scene, cam);
+      drawTags(); drawCone();
+    }
+    requestAnimationFrame(loop);
+  }
+  go("p01");
+  requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>
