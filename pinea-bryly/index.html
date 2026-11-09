@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta charset="utf-8">
 <meta charset="utf-8">
-<title>Spacer 3D · Apartament Pobierowo</title>
+<title>Spacer 3D · Apartament Pobierowo · BRYŁY (kontrola wymiarów)</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600&family=Figtree:wght@400;500;600&display=swap">
@@ -66,7 +66,7 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--f-body)
 <div id="stage" aria-label="Panorama 360°, przeciągnij, aby się rozejrzeć"></div>
 <div id="hs"></div>
 <div id="top">
-  <div id="where" class="glass"><small id="floorLbl">Apartament 55 m² · Pobierowo · BRYŁY (kontrola wymiarów)</small><h1 id="room">Salon</h1></div>
+  <div id="where" class="glass"><small id="floorLbl">Apartament 55 m² · Pobierowo</small><h1 id="room">Salon</h1></div>
   <div id="units" class="glass" style="display:none" role="group" aria-label="Lokal"></div>
   <div id="variants" class="glass" role="group" aria-label="Wariant wnętrza" style="display:none">
     <button data-v="A" aria-pressed="true">Jasny dąb</button><button data-v="B">Ciemne drewno</button><button data-v="C">Minimal</button><button data-v="dew">Stan deweloperski</button>
@@ -116,7 +116,7 @@ async function go(id,keepView){
   if(!keepView){lon=uToLon(p.start);lat=-4}
   if(p.floor!==floor)setFloor(p.floor);
   document.getElementById('room').textContent=p.name;
-  document.getElementById('floorLbl').textContent='Apartament 55 m² · Pobierowo · BRYŁY (kontrola wymiarów)';
+  document.getElementById('floorLbl').textContent='Apartament 55 m² · Pobierowo';
   buildHs();markMap();fade.classList.remove('on');
   p.hs.forEach(h=>tex(url(variant,h.to)));
   try{history.replaceState(null,'','#'+id)}catch(e){}
