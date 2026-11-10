@@ -53,9 +53,17 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--f-body)
 #tools button:hover{background:rgba(243,239,232,.12)}
 #tools svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
 #hs{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-.hs{position:absolute;left:0;top:0;pointer-events:auto;width:58px;height:58px;padding:0;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(0,0,0,.18),0 2px 10px rgba(0,0,0,.25);transform:translate(-50%,-50%);transition:background .15s}
-.hs:hover{background:rgba(255,255,255,.45)}
+.hs{position:absolute;left:0;top:0;pointer-events:auto;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px}
+.hs::before{content:"";width:60px;height:27px;border-radius:50%;background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.95);box-shadow:0 0 0 1px rgba(0,0,0,.2),0 2px 10px rgba(0,0,0,.3);transition:background .15s}
+.hs:hover::before{background:rgba(255,255,255,.55)}
 .hs i{display:none}
+.hs span{font:600 12px/1 system-ui,sans-serif;color:#fff;background:rgba(22,20,18,.74);padding:5px 9px;border-radius:11px;white-space:nowrap}
+#rooms{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 24px);display:flex;gap:6px;padding:6px;overflow-x:auto;z-index:6;scrollbar-width:none}
+#rooms button{flex:none;font:600 13px/1 system-ui,sans-serif;color:inherit;background:transparent;border:1px solid rgba(255,255,255,.25);border-radius:9px;padding:9px 12px;cursor:pointer;white-space:nowrap}
+#rooms button[aria-pressed=true]{background:var(--accent);color:#1b1916;border-color:transparent}
+#plan{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important}
+#hint{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important}
+#tools{bottom:calc(74px + env(safe-area-inset-bottom,0px))!important}
 #fade{position:fixed;inset:0;background:var(--stage);opacity:0;pointer-events:none;transition:opacity .35s}
 #fade.on{opacity:1}
 #hint{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:13px;color:var(--ink-2);padding:8px 14px;transition:opacity .6s;pointer-events:none}
@@ -81,11 +89,11 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--f-body)
   <button id="zin" aria-label="Przybliż">+</button><button id="zout" aria-label="Oddal">−</button>
   <button id="fs" aria-label="Pełny ekran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
 </div>
-<div id="hint" class="glass">Przeciągnij, aby się rozejrzeć · kliknij kropkę na podłodze, aby przejść dalej</div>
-<div id="fade"></div>
+<div id="hint" class="glass">Przeciągnij, aby się rozejrzeć · kliknij kropkę na podłodze albo nazwę pomieszczenia na dole</div>
+<nav id="rooms" class="glass" aria-label="Pomieszczenia"></nav><div id="fade"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const PU={"a": [{"id": "p01", "n": 1, "n5": 1, "name": "Salon", "floor": 0, "xy": [46.85, 29.89], "hs": [{"to": "p02", "u": 0.9203, "label": "Jadalnia i kuchnia", "v": -0.799}, {"to": "p08", "u": 0.8888, "label": "Przedpokój", "v": -0.764}, {"to": "p06", "u": 0.3877, "label": "Balkon (salon)", "v": -0.761}, {"to": "p03", "u": 0.8914, "label": "Hol", "v": -0.767}], "start": 0.976}, {"id": "p02", "n": 2, "n5": 2, "name": "Jadalnia i kuchnia", "floor": 0, "xy": [18.92, 29.89], "hs": [{"to": "p01", "u": 0.6289, "label": "Salon", "v": -1.225}, {"to": "p03", "u": 0.8627, "label": "Hol", "v": -0.763}, {"to": "p08", "u": 0.6522, "label": "Przedpokój", "v": -0.783}], "start": 0.5283}, {"id": "p03", "n": 3, "n5": 3, "name": "Hol", "floor": 0, "xy": [8.02, 51.84], "hs": [{"to": "p01", "u": 0.4039, "label": "Salon", "v": -0.785}, {"to": "p02", "u": 0.3616, "label": "Jadalnia i kuchnia", "v": -0.762}, {"to": "p08", "u": 0.4917, "label": "Przedpokój", "v": -0.752}], "start": 0.4842}, {"id": "p04", "n": 4, "n5": 4, "name": "Sypialnia", "floor": 0, "xy": [66.67, 68.97], "hs": [{"to": "p08", "u": 0.0165, "label": "Przedpokój", "v": -0.966}, {"to": "p07", "u": 0.3875, "label": "Balkon (sypialnia)", "v": -0.766}], "start": 0.8564}, {"id": "p05", "n": 5, "n5": 5, "name": "Łazienka", "floor": 0, "xy": [19.37, 79.31], "hs": [{"to": "p08", "u": 0.2915, "label": "Przedpokój", "v": -0.791}], "start": 0.8349}, {"id": "p06", "n": 6, "n5": 6, "name": "Balkon (salon)", "floor": 0, "xy": [79.28, 6.9], "hs": [{"to": "p01", "u": 0.8888, "label": "Salon", "v": -0.762}], "start": 0.3894}, {"id": "p07", "n": 7, "n5": 7, "name": "Balkon (sypialnia)", "floor": 0, "xy": [80.9, 54.6], "hs": [{"to": "p04", "u": 0.8892, "label": "Sypialnia", "v": -0.763}], "start": 0.4062}, {"id": "p08", "n": 8, "n5": 8, "name": "Przedpokój", "floor": 0, "xy": [28.65, 50.57], "hs": [{"to": "p01", "u": 0.3877, "label": "Salon", "v": -0.764}, {"to": "p02", "u": 0.1517, "label": "Jadalnia i kuchnia", "v": -0.776}, {"to": "p03", "u": 0.9921, "label": "Hol", "v": -0.749}, {"to": "p05", "u": 0.8465, "label": "Łazienka", "v": -0.784}, {"to": "p04", "u": 0.6129, "label": "Sypialnia", "v": -0.761}], "start": 0.7427}]};
+const ORD=['p01','p02','p03','p08','p05','p04','p06','p07'];const PU={"a": [{"id": "p01", "n": 1, "n5": 1, "name": "Salon", "floor": 0, "xy": [46.85, 29.89], "hs": [{"to": "p08", "u": 0.8845, "label": "Przedpokój", "v": -0.525}, {"to": "p02", "u": 0.9336, "label": "Jadalnia i kuchnia", "v": -0.664}, {"to": "p06", "u": 0.3592, "label": "Balkon (salon)", "v": -1.5}], "start": 0.75}, {"id": "p02", "n": 2, "n5": 2, "name": "Jadalnia i kuchnia", "floor": 0, "xy": [18.92, 29.89], "hs": [{"to": "p08", "u": 0.6643, "label": "Przedpokój", "v": -0.679}, {"to": "p03", "u": 0.84, "label": "Hol", "v": -0.629}, {"to": "p01", "u": 0.6289, "label": "Salon", "v": -1.225}], "start": 0.5987}, {"id": "p03", "n": 3, "n5": 3, "name": "Hol", "floor": 0, "xy": [8.02, 51.84], "hs": [{"to": "p02", "u": 0.3392, "label": "Jadalnia i kuchnia", "v": -0.628}, {"to": "p08", "u": 0.4922, "label": "Przedpokój", "v": -0.621}, {"to": "p01", "u": 0.4358, "label": "Salon", "v": -0.543}], "start": 0.6909}, {"id": "p04", "n": 4, "n5": 4, "name": "Sypialnia", "floor": 0, "xy": [62.16, 67.82], "hs": [{"to": "p07", "u": 0.4188, "label": "Balkon (sypialnia)", "v": -0.598}, {"to": "p08", "u": 0.9989, "label": "Przedpokój", "v": -1.556}], "start": 0.1137}, {"id": "p05", "n": 5, "n5": 5, "name": "Łazienka", "floor": 0, "xy": [19.37, 79.31], "hs": [{"to": "p08", "u": 0.2974, "label": "Przedpokój", "v": -0.637}], "start": 0.0849}, {"id": "p06", "n": 6, "n5": 6, "name": "Balkon (salon)", "floor": 0, "xy": [79.28, 6.9], "hs": [{"to": "p01", "u": 0.9362, "label": "Salon", "v": -0.543}], "start": 0.6394}, {"id": "p07", "n": 7, "n5": 7, "name": "Balkon (sypialnia)", "floor": 0, "xy": [80.9, 54.6], "hs": [{"to": "p04", "u": 0.9204, "label": "Sypialnia", "v": -0.598}], "start": 0.6562}, {"id": "p08", "n": 8, "n5": 8, "name": "Przedpokój", "floor": 0, "xy": [28.65, 50.57], "hs": [{"to": "p02", "u": 0.1638, "label": "Jadalnia i kuchnia", "v": -0.674}, {"to": "p03", "u": 0.9925, "label": "Hol", "v": -0.62}, {"to": "p05", "u": 0.8343, "label": "Łazienka", "v": -0.696}, {"to": "p01", "u": 0.3837, "label": "Salon", "v": -0.524}, {"to": "p04", "u": 0.613, "label": "Sypialnia", "v": -0.754}], "start": 0.1074}]};
 let unit="a",P=PU.a;
 let byId=Object.fromEntries(P.map(p=>[p.id,p]));
 let cur='p01',variant='A',floor=0,lon=0,lat=-4,fov=75;
@@ -123,14 +131,14 @@ async function go(id,keepView){
 }
 const hsBox=document.getElementById('hs');let hsEls=[];
 const arrow='<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
-function buildHs(){hsBox.innerHTML='';hsEls=byId[cur].hs.map(h=>{const b=document.createElement('button');b.className='hs';b.innerHTML='';b.title=h.label;b.setAttribute('aria-label','Przejdź: '+h.label);
+function buildHs(){hsBox.innerHTML='';hsEls=byId[cur].hs.map(h=>{const b=document.createElement('button');b.className='hs';b.innerHTML='<span>'+h.label+'</span>';b.title=h.label;b.setAttribute('aria-label','Przejdź: '+h.label);
   b.addEventListener('click',e=>{e.stopPropagation();go(h.to)});hsBox.appendChild(b);
   const a=THREE.MathUtils.degToRad(uToLon(h.u));const v=new THREE.Vector3(Math.cos(a),(h.v??-0.28),Math.sin(a)).normalize().multiplyScalar(40);return{b,v}})}
 const mapEl=document.getElementById('map'),mapImg=document.getElementById('mapImg');
 function setFloor(f){floor=f;mapImg.src='plan_pinea.jpg';document.querySelectorAll('#plan .tabs button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===f)));drawPts()}
-function drawPts(){mapEl.querySelectorAll('.pt').forEach(e=>e.remove());P.filter(p=>p.floor===floor).forEach(p=>{const b=document.createElement('button');b.className='pt';b.title=p.name;b.setAttribute('aria-label',p.name);
+function drawPts(){const rb=document.getElementById('rooms');rb.innerHTML='';ORD.map(i=>byId[i]).filter(Boolean).forEach(p=>{const b=document.createElement('button');b.textContent=p.name;b.dataset.id=p.id;b.onclick=()=>go(p.id);rb.appendChild(b)});mapEl.querySelectorAll('.pt').forEach(e=>e.remove());P.filter(p=>p.floor===floor).forEach(p=>{const b=document.createElement('button');b.className='pt';b.title=p.name;b.setAttribute('aria-label',p.name);
   b.style.left=p.xy[0]+'%';b.style.top=p.xy[1]+'%';b.dataset.id=p.id;b.onclick=()=>go(p.id);mapEl.appendChild(b)});markMap()}
-function markMap(){mapEl.querySelectorAll('.pt').forEach(b=>b.classList.toggle('on',b.dataset.id===cur))}
+function markMap(){document.querySelectorAll('#rooms button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===cur)));mapEl.querySelectorAll('.pt').forEach(b=>b.classList.toggle('on',b.dataset.id===cur))}
 document.querySelectorAll('#plan .tabs button').forEach(b=>b.onclick=()=>{const f=+b.dataset.f;setFloor(f);if(byId[cur].floor!==f)go(f?'p09':'p03')});
 const pl=document.getElementById('plan'),pt=document.getElementById('planToggle');
 pt.onclick=()=>{const m=pl.classList.toggle('min');pt.textContent=m?'Pokaż plan':'Ukryj plan';pt.setAttribute('aria-expanded',String(!m))};
@@ -157,7 +165,7 @@ function frame(){requestAnimationFrame(frame);
   tgt.set(Math.sin(phi)*Math.cos(th),Math.cos(phi),Math.sin(phi)*Math.sin(th));cam.lookAt(tgt);renderer.render(scene,cam);
   const w=innerWidth,h=innerHeight;
   for(const {b,v} of hsEls){tmp.copy(v).project(cam);const vis=tmp.z<1&&Math.abs(tmp.x)<1.2&&Math.abs(tmp.y)<1.2;
-    b.style.display=vis?'flex':'none';if(vis)b.style.transform=`translate(${(tmp.x*.5+.5)*w}px,${(-tmp.y*.5+.5)*h}px) translate(-50%,-50%) scaleY(.45)`}}
+    b.style.display=vis?'flex':'none';if(vis)b.style.transform=`translate(${(tmp.x*.5+.5)*w}px,${(-tmp.y*.5+.5)*h}px) translate(-50%,-14px)`}}
 document.querySelectorAll('#units button').forEach(b=>b.onclick=()=>{unit=b.dataset.u;P=PU[unit];byId=Object.fromEntries(P.map(p=>[p.id,p]));document.querySelectorAll('#units button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));setFloor(byId[cur].floor);go(cur)});
 setFloor(0);
 const start=(location.hash||'').slice(1);go(byId[start]?start:'p01');frame();
